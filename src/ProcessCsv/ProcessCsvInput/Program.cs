@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace ProcessCsvInput
 {
@@ -12,6 +14,16 @@ namespace ProcessCsvInput
         {
             // Get CSV file to work with
             string csvPath = GetCsvPath(args);
+            var records = ReadCsvRecords(csvPath);
+
+            Console.WriteLine("Reading {0} record(s) from {1}.", records.Count(), csvPath);
+            Console.WriteLine();
+
+            // TODO: Process your data
+            foreach (var r in records)
+            {
+                Console.WriteLine("{0}, {1}", r.A, r.B);
+            }
         }
 
         private static string GetCsvPath(string[] args)
@@ -41,6 +53,25 @@ namespace ProcessCsvInput
             {
                 Console.WriteLine("CSV file not found. Program will terminate.");
                 return null;
+            }
+        }
+
+        private static IEnumerable<CsvInputModel> ReadCsvRecords(string csvPath)
+        {
+            using (var csvFile = File.OpenText(csvPath))
+            {
+                var csv = new CsvHelper.CsvReader(csvFile);
+                csv.Configuration.BadDataFound = null;
+                csv.Configuration.HasHeaderRecord = true;
+                csv.Configuration.HeaderValidated = (isValid, headerNames, headerNameIndex, csvContext) =>
+                {
+                    if ( ! isValid)
+                    {
+                        Console.WriteLine("There's a problem to a header of column '{0}'.", headerNames[headerNameIndex]);
+                    }
+                };
+
+                return csv.GetRecords<CsvInputModel>().ToArray();
             }
         }
     }
