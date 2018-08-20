@@ -21,7 +21,7 @@ And has a CSV input data file `src\ProcessCsv\data\input.csv`.
 * Change directory to the working folder
 
     ```
-    cd src\ProcessCsv\ProcessCsvInput
+    cd readcsv\src\ProcessCsv\ProcessCsvInput
     ```
 
 * You can run from the command line using
