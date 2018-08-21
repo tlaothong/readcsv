@@ -15,10 +15,9 @@ namespace ProcessCsvInput
         {
             // Get CSV filename from CLI argument or use default filename (input.csv).
             var csvFilename = (args?.Length > 0) ? args[0] : DefaultInputCsvFileName;
-            string csvPath = GetCsvPath(csvFilename);
-            var records = ReadCsvRecords<CsvInputModel>(csvPath);
+            var records = ReadCsvRecords<CsvInputModel>(csvFilename);
 
-            Console.WriteLine("Reading {0} record(s) from {1}.", records.Count(), csvPath);
+            Console.WriteLine("Reading {0} record(s) from {1}.", records.Count(), csvFilename);
             Console.WriteLine();
 
             // TODO: Process your data
@@ -28,17 +27,7 @@ namespace ProcessCsvInput
             }
         }
 
-        private static string GetCsvInputFileFromParameter(string[] args)
-        {
-            if (args?.Length > 0)
-            {
-                return args[0];
-            }
-
-            return null;
-        }
-
-        private static string GetCsvPath(string csvFilename)
+        private static string SearchMatchingCsvPath(string csvFilename)
         {
             string csvPath = csvFilename;
 
@@ -64,8 +53,15 @@ namespace ProcessCsvInput
             }
         }
 
-        private static IEnumerable<T> ReadCsvRecords<T>(string csvPath)
+        private static IEnumerable<T> ReadCsvRecords<T>(string csvFilename)
         {
+            var csvPath = SearchMatchingCsvPath(csvFilename);
+
+            if (string.IsNullOrEmpty(csvPath))
+            {
+                throw new ApplicationException("Program CAN'T be continue without the correct file.");
+            }
+
             using (var csvFile = File.OpenText(csvPath))
             {
                 var csv = new CsvHelper.CsvReader(csvFile);
