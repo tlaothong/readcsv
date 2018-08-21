@@ -8,8 +8,6 @@ namespace ProcessCsvInput
     class Program
     {
         private const string DefaultInputCsvFileName = "input.csv";
-        private const string DefaultCsvFolder = @"..\..\..\..\data";
-        private const string FallbackDefaultCsvFolder = @"..\data";
 
         static void Main(string[] args)
         {
@@ -24,32 +22,6 @@ namespace ProcessCsvInput
             foreach (var r in records)
             {
                 Console.WriteLine("{0}, {1}", r.A, r.B);
-            }
-        }
-
-        private static string SearchMatchingCsvPath(string csvFilename)
-        {
-            string csvPath = csvFilename;
-
-            if (!File.Exists(csvPath) && !Path.IsPathFullyQualified(csvFilename))
-            {
-                csvPath = Path.Combine(DefaultCsvFolder, csvFilename);
-            }
-            if (!File.Exists(csvPath) && !Path.IsPathFullyQualified(csvFilename))
-            {
-                csvPath = Path.Combine(FallbackDefaultCsvFolder, csvFilename);
-            }
-            csvPath = Path.GetFullPath(csvPath);
-
-            if (File.Exists(csvPath))
-            {
-                Console.WriteLine("Found CSV file: {0}", csvPath);
-                return csvPath;
-            }
-            else
-            {
-                Console.WriteLine("CSV file not found. Program will terminate.");
-                return null;
             }
         }
 
@@ -76,6 +48,34 @@ namespace ProcessCsvInput
                 };
 
                 return csv.GetRecords<T>().ToArray();
+            }
+        }
+
+        private const string DefaultCsvFolder = @"..\..\..\..\data";
+        private const string FallbackDefaultCsvFolder = @"..\data";
+        private static string SearchMatchingCsvPath(string csvFilename)
+        {
+            string csvPath = csvFilename;
+
+            if (!File.Exists(csvPath) && !Path.IsPathFullyQualified(csvFilename))
+            {
+                csvPath = Path.Combine(DefaultCsvFolder, csvFilename);
+            }
+            if (!File.Exists(csvPath) && !Path.IsPathFullyQualified(csvFilename))
+            {
+                csvPath = Path.Combine(FallbackDefaultCsvFolder, csvFilename);
+            }
+            csvPath = Path.GetFullPath(csvPath);
+
+            if (File.Exists(csvPath))
+            {
+                Console.WriteLine("Found CSV file: {0}", csvPath);
+                return csvPath;
+            }
+            else
+            {
+                Console.WriteLine("CSV file not found. Program will terminate.");
+                return null;
             }
         }
     }
