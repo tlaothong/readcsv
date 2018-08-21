@@ -7,14 +7,16 @@ namespace ProcessCsvInput
 {
     class Program
     {
-        private const string DefaultCsvFilePath = @"..\..\..\..\data\input.csv";
-        private const string FallbackDefaultCsvFilePath = @"..\data\input.csv";
+        private const string DefaultInputCsvFileName = "input.csv";
+        private const string DefaultCsvFolder = @"..\..\..\..\data";
+        private const string FallbackDefaultCsvFolder = @"..\data";
 
         static void Main(string[] args)
         {
-            // Get CSV file to work with
-            string csvPath = GetCsvPath(args);
-            var records = ReadCsvRecords(csvPath);
+            // Get CSV filename from CLI argument or use default filename (input.csv).
+            var csvFilename = (args?.Length > 0) ? args[0] : DefaultInputCsvFileName;
+            string csvPath = GetCsvPath(csvFilename);
+            var records = ReadCsvRecords<CsvInputModel>(csvPath);
 
             Console.WriteLine("Reading {0} record(s) from {1}.", records.Count(), csvPath);
             Console.WriteLine();
@@ -26,27 +28,33 @@ namespace ProcessCsvInput
             }
         }
 
-        private static string GetCsvPath(string[] args)
+        private static string GetCsvInputFileFromParameter(string[] args)
         {
-            string csvPath = null;
+            if (args?.Length > 0)
+            {
+                return args[0];
+            }
 
-            if (args?.Length > 1)
+            return null;
+        }
+
+        private static string GetCsvPath(string csvFilename)
+        {
+            string csvPath = csvFilename;
+
+            if (!File.Exists(csvPath) && !Path.IsPathFullyQualified(csvFilename))
             {
-                csvPath = args[0];
+                csvPath = Path.Combine(DefaultCsvFolder, csvFilename);
             }
-            if (string.IsNullOrEmpty(csvPath))
+            if (!File.Exists(csvPath) && !Path.IsPathFullyQualified(csvFilename))
             {
-                csvPath = DefaultCsvFilePath;
-            }
-            if (!File.Exists(csvPath))
-            {
-                csvPath = FallbackDefaultCsvFilePath;
+                csvPath = Path.Combine(FallbackDefaultCsvFolder, csvFilename);
             }
             csvPath = Path.GetFullPath(csvPath);
 
             if (File.Exists(csvPath))
             {
-                Console.WriteLine("Using CSV file: {0}", csvPath);
+                Console.WriteLine("Found CSV file: {0}", csvPath);
                 return csvPath;
             }
             else
@@ -56,7 +64,7 @@ namespace ProcessCsvInput
             }
         }
 
-        private static IEnumerable<CsvInputModel> ReadCsvRecords(string csvPath)
+        private static IEnumerable<T> ReadCsvRecords<T>(string csvPath)
         {
             using (var csvFile = File.OpenText(csvPath))
             {
@@ -71,7 +79,7 @@ namespace ProcessCsvInput
                     }
                 };
 
-                return csv.GetRecords<CsvInputModel>().ToArray();
+                return csv.GetRecords<T>().ToArray();
             }
         }
     }
